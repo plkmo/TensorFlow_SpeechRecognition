@@ -5,4 +5,4 @@ Problem statement:
 Can you build an algorithm that understands simple speech commands?
 
 Architecture:
-In progress
+DenseNet

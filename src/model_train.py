@@ -226,12 +226,13 @@ if __name__ == "__main__":
         net.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.01)
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[20,40,60,80,100,200,300], gamma=0.7)
 
     try:
         start_epoch, best_pred = load(net, optimizer, load_best=False)
     except:
         start_epoch = 0; best_pred = 0
-    end_epoch = 500
+    end_epoch = 330
 
     try:
         losses_per_epoch = load_pickle("losses_per_epoch.pkl")
@@ -251,10 +252,10 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-            if i % 100 == 99: # print every 100 mini-batches of size = batch_size
-                losses_per_batch.append(total_loss/100)
+            if i % 50 == 49: # print every 50 mini-batches of size = batch_size
+                losses_per_batch.append(total_loss/50)
                 print('[Epoch: %d, %5d/ %d points] total loss per batch: %.7f' %
-                      (e, (i + 1)*batch_size, len(trainset), total_loss/100))
+                      (e, (i + 1)*batch_size, len(trainset), total_loss/50))
                 total_loss = 0.0
         losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
         score = model_eval(net, test_loader, cuda=cuda)
@@ -268,6 +269,8 @@ if __name__ == "__main__":
                     'optimizer' : optimizer.state_dict(),\
                 }, os.path.join("./data/" ,"model_best.pth.tar"))
         if (e % 10) == 0:
+            save_as_pickle("losses_per_epoch.pkl", losses_per_epoch)
+            save_as_pickle("test_accuracy_per_epoch.pkl", accuracy_per_epoch)
             torch.save({
                     'epoch': e + 1,\
                     'state_dict': net.state_dict(),\
@@ -277,7 +280,7 @@ if __name__ == "__main__":
     
     fig = plt.figure(figsize=(20,20))
     ax = fig.add_subplot(111)
-    ax.scatter([e for e in range(start_epoch,end_epoch,1)], losses_per_epoch)
+    ax.scatter([e for e in range(len(losses_per_epoch))], losses_per_epoch)
     ax.tick_params(axis="both", length=2, width=1, labelsize=14)
     ax.set_xlabel("Epoch", fontsize=22)
     ax.set_ylabel("Loss per batch", fontsize=22)
@@ -287,7 +290,7 @@ if __name__ == "__main__":
     
     fig2 = plt.figure(figsize=(20,20))
     ax2 = fig2.add_subplot(111)
-    ax2.scatter([e for e in range(start_epoch,end_epoch,1)], accuracy_per_epoch)
+    ax2.scatter([e for e in range(len(accuracy_per_epoch))], accuracy_per_epoch)
     ax2.tick_params(axis="both", length=2, width=1, labelsize=14)
     ax2.set_xlabel("Epoch", fontsize=22)
     ax2.set_ylabel("Test Accuracy", fontsize=22)

@@ -44,7 +44,8 @@ if __name__ == "__main__":
     data = []; length_log = []
     fixed_len = 32 # fix the MFCC time length
     subfolders = [f.name for f in os.scandir("data") if f.is_dir()]
-    labels = {"yes":0, "no":1, "up":2, "down":3, "left":4, "right":5, "on":6, "off":7, "stop":8, "go":9}
+    labels = {"yes":0, "no":1, "up":2, "down":3, "left":4, "right":5, "on":6, "off":7, "stop":8, "go":9,\
+              "silence":10, "unknown":11}
     current_time = time.time()
     for idx, name in enumerate(subfolders):
         print("%.3f %% completed. Took %.2f seconds" % (100*idx/len(subfolders), time.time() - current_time))

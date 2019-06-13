@@ -5,4 +5,7 @@ Problem statement:
 Can you build an algorithm that understands simple speech commands?
 
 Architecture:
-DenseNet
+2D Convolutional DenseNet on MFCC features
+
+# Training
+

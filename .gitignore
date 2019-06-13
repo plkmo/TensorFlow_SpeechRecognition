@@ -9,3 +9,4 @@
 *.model
 *.profile
 /src/data/*
+/src/__pycache__/*

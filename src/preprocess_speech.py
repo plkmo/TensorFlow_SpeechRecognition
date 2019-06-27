@@ -11,8 +11,13 @@ import os
 import pickle
 import librosa
 import re
-import time
 import pandas as pd
+from tqdm import tqdm
+import logging
+
+logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s', \
+                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+logger = logging.getLogger(__file__)
 
 def log_specgram(audio, sample_rate, window_size=20,
                  step_size=10, eps=1e-10):
@@ -39,23 +44,21 @@ def save_as_pickle(filename, data):
     with open(completeName, 'wb') as output:
         pickle.dump(data, output)
 
-if __name__ == "__main__":
+def extract_MFCC(args):
     ### Extract MFCC coefficients for all data
+    logger.info("Extracting MFCC features...")
     data = []; length_log = []
-    fixed_len = 32 # fix the MFCC time length
+    fixed_len = args.mfcc_bin_len # fix the MFCC time length
     subfolders = [f.name for f in os.scandir("data") if f.is_dir()]
     labels = {"yes":0, "no":1, "up":2, "down":3, "left":4, "right":5, "on":6, "off":7, "stop":8, "go":9,\
               "silence":10, "unknown":11}
-    current_time = time.time()
-    for idx, name in enumerate(subfolders):
-        print("%.3f %% completed. Took %.2f seconds" % (100*idx/len(subfolders), time.time() - current_time))
-        current_time = time.time()
+    for idx, name in tqdm(enumerate(subfolders)):
         if name == "_background_noise_":
             for file in os.listdir("./data/" + name):
                 if re.match(".+.wav", file) is not None:
                     sample_rate, samples = wavfile.read(os.path.join("./data/%s/" % name, file))
-                    mfcc = librosa.feature.mfcc(y=samples.astype(float), sr=sample_rate, n_mfcc=20,\
-                                                n_fft=2048, hop_length=512)
+                    mfcc = librosa.feature.mfcc(y=samples.astype(float), sr=sample_rate, n_mfcc=args.n_mfcc,\
+                                                n_fft=args.n_fft, hop_length=args.hop_length)
                     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
                     for i in range(len(delta2_mfcc[0,:])//fixed_len):
                         s = delta2_mfcc[:, i*fixed_len:(i + 1)*fixed_len]
@@ -66,8 +69,8 @@ if __name__ == "__main__":
             for file in os.listdir("./data/" + name):
                 if re.match(".+.wav", file) is not None:
                     sample_rate, samples = wavfile.read(os.path.join("./data/%s/" % name, file))
-                    mfcc = librosa.feature.mfcc(y=samples.astype(float), sr=sample_rate, n_mfcc=20,\
-                                                n_fft=2048, hop_length=512)
+                    mfcc = librosa.feature.mfcc(y=samples.astype(float), sr=sample_rate, n_mfcc=args.n_mfcc,\
+                                                n_fft=args.n_fft, hop_length=args.hop_length)
                     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
                     if len(delta2_mfcc[0,:]) != fixed_len:
                         s = delta2_mfcc[:, :fixed_len]
@@ -79,4 +82,5 @@ if __name__ == "__main__":
                         else:
                             data.append((s, 10)) # "other" label
     save_as_pickle("data.pkl", data)
-    save_as_pickle("length_log.pkl", data)
+    save_as_pickle("length_log.pkl", length_log)
+    logger.info("Done extracting MFCC features!")

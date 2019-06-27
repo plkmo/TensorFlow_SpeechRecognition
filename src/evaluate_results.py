@@ -14,6 +14,7 @@ import seaborn as sb
 import pandas as pd
 import numpy as np
 from model_train import DenseNetV2, dataset
+from tqdm import tqdm
 
 def load_pickle(filename):
     completeName = os.path.join("./data/",\
@@ -37,14 +38,14 @@ if __name__=="__main__":
     net = DenseNetV2(c_in=1, c_out=32, batch_size=batch_size)
     if cuda:
         net.cuda()
-    checkpoint = torch.load(os.path.join("./data/","model_best.pth.tar"))
+    checkpoint = torch.load(os.path.join("./data/","test_model_best_%d.pth.tar" % 0))
     net.load_state_dict(checkpoint['state_dict'])
     net.eval()
     data_set = dataset(df["mfcc"], df["label"])
     train_loader = DataLoader(data_set, batch_size=batch_size, shuffle=False, \
                               num_workers=0, pin_memory=False)
     y_pred = []; y_true = []
-    for X, y in train_loader:
+    for X, y in tqdm(train_loader):
         y_true.extend(list(y.numpy()))
         if cuda:
             X = X.cuda().float()

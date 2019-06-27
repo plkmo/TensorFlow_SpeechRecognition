@@ -55,18 +55,18 @@ def load_dataloaders(args):
     basepath = "./data/"
     data_path = os.path.join(basepath, "data.pkl")
     if os.path.isfile(data_path):
-        data = load_pickle(data_path)
+        data = load_pickle("data.pkl")
         logger.info("Loaded preprocessed data.")
     else:
         logger.info("Preprocessing...")
         extract_MFCC(args)
-        data = load_pickle(data_path)
+        data = load_pickle("data.pkl")
     df = pd.DataFrame(data=np.array(data), columns=["mfcc", "label"])
     ## train-test split
     X_train, X_test, y_train, y_test = train_test_split(df["mfcc"], df["label"],\
                                                       test_size = 0.2,\
                                                       random_state = 7,\
-                                                      shuffle=False,\
+                                                      shuffle=True,\
                                                       stratify=df["label"])
     trainset = dataset(X_train, y_train)
     testset = dataset(X_test, y_test)

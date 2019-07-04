@@ -132,9 +132,9 @@ def model_eval(net, test_loader, cuda=None):
         
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--n_mfcc", type=int, help="number of MFCC coefficients")
-    parser.add_argument("--n_fft", type=int, help="Length of FFT window")
-    parser.add_argument("--hop_length", type=int, help="number of samples between successive frames")
+    parser.add_argument("--n_mfcc", type=int, default=13, help="number of MFCC coefficients")
+    parser.add_argument("--n_fft", type=int, default=2048, help="Length of FFT window")
+    parser.add_argument("--hop_length", type=int, default=512, help="number of samples between successive frames")
     parser.add_argument("--mfcc_bin_len", type=int, help="MFCC binning length")
     parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
     parser.add_argument("--num_epochs", type=int, default=300, help="No of epochs")
